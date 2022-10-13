@@ -5,11 +5,11 @@ import math
 class Move:
     def __init__(self):
         self.hub = PrimeHub()
-        self.x= Motor('A')
-        self.y=Motor('B')
-        self.pen=Motor('C')
+        self.x= Motor('F')
+        self.y=Motor('C')
+        self.pen=Motor('A')
         self.end=ForceSensor('D')
-        self.fed=ColorSensor('E')
+        self.fed=ColorSensor('B')
 
     def calibrate(self):
         self.x.start(-100)
