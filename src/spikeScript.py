@@ -1,6 +1,6 @@
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
-import math
+import math,time
 
 class Move:
     def __init__(self):
@@ -13,16 +13,16 @@ class Move:
         self.pen.run_for_degrees(80, -50)
 
     def calibrate(self):
-        self.x.start(-100)
+        self.x.start(-10)
         self.end.wait_until_pressed()
         self.x.stop()
     #18o pcm y vs 90 pcm for x /5
     def moveX(self,x):
-        self.x.run_for_degrees(int(x), 50)
+        self.x.run_for_degrees(int(x), 20)
 
     def carridgeReturn(self,y):
         self.calibrate()
-        self.y.run_for_degrees(int(y), 50)
+        self.y.run_for_degrees(int(y), 20)
 
     def dot(self):
         self.pen.run_for_degrees(80, 50)
@@ -36,27 +36,34 @@ class Move:
 class Printer:
     def __init__(self,image):
         self.image=image
-        self.XLEN=int(3*360)
-        self.YLEN=self.XLEN//5
-        self.RESX=25
+        self.XLEN=int(5*360)
+        self.YLEN=self.XLEN//4
+        self.RESX=50
         self.RESY=25
+        self.XCHANGE=self.XLEN//self.RESX
         self.m=Move()
 
     def printAll(self):
         self.m.feed()
         self.m.calibrate()
+        # self.m.moveX(self.XLEN)
+        # quit()
         for y in range(self.RESY):
+            time.sleep(0.5)
             self.xBuffer=0
             self.printRow(y)
 
     def printRow(self,y):
         for x in range(self.RESX):
-            if self.image[y*self.RESX+x]=="1":
+            if self.image[(y*self.RESX)+x]=="1":
                 self.m.moveX(self.xBuffer)
+                self.xBuffer=0
                 self.m.dot()
-            self.xBuffer+=self.XLEN/self.RESX
+            self.xBuffer+=self.XCHANGE
+            if self.xBuffer>self.XLEN:
+                print('fail')
         self.m.carridgeReturn(self.YLEN/self.RESY)
 
 
-printer=Printer(list("0000000000000000000000000000000000000000000000000000000000000000000000000000000011100000111000000000000001110000011100000000000000111000001110000000000000000000000000000000000000000000000000000000000000110000000000000000000000011000000000000001000000001110000000000001100000000011110000000011100000000000111100000011110000000000000111001111000000000000000001111111000000000000000000011110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
+printer=Printer(list("1111110000000000000000110000000000000000000011111111111100000000000000001100000000000000000000111111110011000000000000000011000000000000000000001100111100110000000000000000110000000000000000000011001111111100000000000000000000000000000000000000111111111111000000000000000000000000000000000000001111110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"))
 printer.printAll()
